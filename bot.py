@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
 
-# Состояния для управления диалогом
 USER_INPUT, CONFIRM_TEXT, CHOOSE_GENDER, CHOOSE_GENRE = range(4)
 
 async def start(update: Update, context):
@@ -17,14 +16,12 @@ async def start(update: Update, context):
 async def user_input(update: Update, context):
     """Обработка пользовательского ввода слов"""
     user_message = update.message.text
-    context.user_data['words'] = user_message.split(',')  # Сохраняем слова
+    context.user_data['words'] = user_message.split(',')
     await update.message.reply_text("Генерирую текст песни...")  # Заглушка
 
-    # Генерация текста песни (пока заглушка)
     generated_text = "Это текст песни на основе: " + ", ".join(context.user_data['words'])  # Заглушка
     context.user_data['generated_text'] = generated_text
 
-    # Запрос подтверждения текста
     await confirm_text(update, context)
 
 async def confirm_text(update: Update, context):
@@ -42,7 +39,6 @@ async def confirm_text(update: Update, context):
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    # Используем context для доступа к сгенерированному тексту
     await update.message.reply_text(context.user_data['generated_text'], reply_markup=reply_markup)
 
 async def button_handler(update: Update, context):
@@ -54,21 +50,20 @@ async def button_handler(update: Update, context):
         await choose_gender(update, context)
     elif query.data == 'regenerate':
         await query.message.reply_text("Генерирую текст песни...")  # Заглушка
-        # Логика перегенерации текста песни
     elif query.data == 'other_words':
         await query.message.reply_text("Напиши слова через запятую.")
         return USER_INPUT
     elif query.data in ['male', 'female']:
-        context.user_data['gender'] = query.data  # Сохраняем выбранный пол
-        await choose_genre(update)  # Переходим к выбору жанра
+        context.user_data['gender'] = query.data
+        await choose_genre(update)
     elif query.data in ['pop', 'rock', 'hiphop']:
-        context.user_data['genre'] = query.data  # Сохраняем выбранный жанр
-        await send_audio(update)  # Выдаем аудиофайл
+        context.user_data['genre'] = query.data
+        await send_audio(update)
 
 async def choose_gender(update: Update, context):
     """Выбор пола вокала"""
-    query = update.callback_query  # Получаем объект CallbackQuery
-    await query.answer()  # Подтверждаем нажатие кнопки
+    query = update.callback_query
+    await query.answer()
 
     keyboard = [
         [InlineKeyboardButton("Мужской", callback_data='male')],
@@ -76,7 +71,6 @@ async def choose_gender(update: Update, context):
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    # Используем edit_message_text вместо reply_text
     await query.message.edit_text("Выбери пол вокала:", reply_markup=reply_markup)
 
 async def choose_genre(update: Update):
@@ -95,8 +89,8 @@ async def choose_genre(update: Update):
 
 async def send_audio(update: Update):
     """Выдача аудиофайла"""
-    query = update.callback_query  # Получаем объект CallbackQuery
-    await query.answer()  # Подтверждаем нажатие кнопки
+    query = update.callback_query
+    await query.answer()
 
     # Заглушка для отправки аудиофайла
     await query.message.reply_text("Ваш аудиофайл будет здесь (заглушка).")  # Заглушка для аудиофайла
